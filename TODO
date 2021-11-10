@@ -1,0 +1,6 @@
+- Parse commands
+  - /add [1-5] opt-tag-1 opt-tag-2
+  - /show
+- Implement a bucket client
+  - Update
+  - Read
