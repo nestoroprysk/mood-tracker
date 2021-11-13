@@ -1,3 +1,11 @@
+# Description
+
+Mood tracker is a telegram bot for tracking mood.
+
+It's built on top ot gcloud.
+
+# Setup
+
 ```bash
 # ask father for a new bot
 python -m webbrowser https://t.me/botfather

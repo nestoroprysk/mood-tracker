@@ -11,5 +11,5 @@ func Pluralize(str string, count int) string {
 
 // Format code formats str as code in MD.
 func FormatCode(s string) string {
-	return "```\n" + s + "\n```"
+	return s
 }
