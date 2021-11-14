@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/nestoroprysk/mood-tracker/internal/cmd"
 	"github.com/nestoroprysk/mood-tracker/internal/env"
@@ -25,6 +26,8 @@ func MoodTracker(w http.ResponseWriter, r *http.Request) {
 		respond(w, nil, err.Error())
 		return
 	}
+
+	logUpdate(u)
 
 	t := telegramclient.New(env.Config, u.Message.Chat.ID, http.DefaultClient)
 	if err != nil {
@@ -57,8 +60,18 @@ func MoodTracker(w http.ResponseWriter, r *http.Request) {
 	respond(w, t, result)
 }
 
+func logUpdate(u telegramclient.Update) {
+	res, err := json.MarshalIndent(u, "", "")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	log.Println(strings.ReplaceAll(string(res), "\n", ""))
+}
+
 func respond(writer http.ResponseWriter, client telegramclient.TelegramClient, response string) {
-	log.Println(response)
+	log.Println(strings.ReplaceAll(response, "\n", ""))
 
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
