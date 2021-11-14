@@ -4,6 +4,14 @@ Mood tracker is a telegram bot for tracking mood.
 
 It's built on top ot gcloud.
 
+# Bot
+
+The bot is currently up and happy by the name @MoodyMoodTrackerBot. Click the [link](https://t.me/MoodyMoodTrackerBot) to access it.
+
+For feedback reach to me by the email nestoroprysk@gmail.com.
+
+Many thanks!
+
 # Setup
 
 ```bash
