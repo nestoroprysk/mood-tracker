@@ -13,15 +13,15 @@ steps:
     args:
       - -c
       - >
-        gcloud functions deploy MoodTracker
-          --entry-point=MoodTracker
-          --region=europe-west3
-          --trigger-http
-          --runtime=go116
-          --timeout=5s
-          --memory=128MB
-          --max-instances=1
-          --allow-unauthenticated
+        gcloud functions deploy MoodTracker \
+          --entry-point=MoodTracker \
+          --region=europe-west3 \
+          --trigger-http \
+          --runtime=go116 \
+          --timeout=5s \
+          --memory=128MB \
+          --max-instances=1 \
+          --allow-unauthenticated \
           --update-env-vars=MOOD_TRACKER_BOT_TOKEN=$$MOOD_TRACKER_BOT_TOKEN,MOOD_TRACKER_BUCKET=$$MOOD_TRACKER_BUCKET
     env: ["MOOD_TRACKER_BUCKET=moodtracker"]
     secretEnv:
