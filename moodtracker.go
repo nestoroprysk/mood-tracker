@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -14,6 +15,12 @@ import (
 )
 
 func MoodTracker(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if r := recover(); r != nil {
+			respond(w, nil, fmt.Sprintf("%s", r))
+		}
+	}()
+
 	env := env.T{
 		Config: telegramclient.Config{
 			Token: os.Getenv("MOOD_TRACKER_BOT_TOKEN"),
@@ -80,13 +87,15 @@ func respond(writer http.ResponseWriter, client telegramclient.TelegramClient, r
 		log.Println(err)
 	}
 
-	if response != "" {
+	if client != nil && response != "" {
 		r, err := client.SendMessage(response)
 		if err != nil {
 			log.Println(err)
 			return
 		}
 		log.Println(r)
+	} else if response != "" {
+		log.Println(response)
 	} else {
 		log.Println("empty response")
 	}

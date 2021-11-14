@@ -2,12 +2,15 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
+	"sort"
 	"strconv"
 	"time"
 
 	chart "github.com/wcharczuk/go-chart/v2"
+	"golang.org/x/sync/errgroup"
 )
 
 func newStat(c config) (Cmd, error) {
@@ -22,6 +25,10 @@ func newStat(c config) (Cmd, error) {
 			return "", err
 		}
 
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*500)
+		defer cancel()
+		g, ctx := errgroup.WithContext(ctx)
+
 		for _, e := range []struct {
 			name string
 			f    func(Registry) (io.Reader, error)
@@ -30,14 +37,23 @@ func newStat(c config) (Cmd, error) {
 			{name: "label.png", f: labelPNG},
 			{name: "freq.png", f: freqPNG},
 		} {
-			png, err := e.f(r)
-			if err != nil {
-				return "", err
-			}
+			f, name := e.f, e.name
+			g.Go(func() error {
+				png, err := f(r)
+				if err != nil {
+					return err
+				}
 
-			if _, err := c.SendPNG(e.name, png); err != nil {
-				return "", err
-			}
+				if _, err := c.SendPNG(name, png); err != nil {
+					return err
+				}
+
+				return nil
+			})
+		}
+
+		if err := g.Wait(); err != nil {
+			return "", err
 		}
 
 		return "Enjoy!", nil
@@ -86,6 +102,8 @@ func labelPNG(r Registry) (io.Reader, error) {
 		})
 	}
 
+	sort.Slice(vals, func(i, j int) bool { return vals[i].Label < vals[j].Label })
+
 	graph := chart.BarChart{
 		Title: "Mood Labels",
 		Background: chart.Style{
@@ -126,6 +144,8 @@ func freqPNG(r Registry) (io.Reader, error) {
 			Value: float64(v),
 		})
 	}
+
+	sort.Slice(vals, func(i, j int) bool { return vals[i].Label < vals[j].Label })
 
 	graph := chart.BarChart{
 		Title: "Mood Frequencies",
