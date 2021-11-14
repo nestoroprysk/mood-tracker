@@ -5,20 +5,29 @@ import (
 	"strings"
 
 	"github.com/nestoroprysk/mood-tracker/internal/repository"
+	"github.com/nestoroprysk/mood-tracker/internal/telegramclient"
 )
 
 // Config configures the command.
 type Config struct {
-	Repository repository.Repository
-	Args       string `validate:"required"`
-	UserID     int    `validate:"required"`
+	telegramclient.TelegramClient
+	repository.Repository
+	Args   string `validate:"required"`
+	UserID int    `validate:"required"`
+}
+
+type config struct {
+	telegramclient.TelegramClient
+	repository.Repository
+	args   []string `validate:"required"`
+	userID int      `validate:"required"`
 }
 
 // Cmd executes the comment and returns the text result or error.
 type Cmd func() (string, error)
 
 // cmdCreator creates a command.
-type cmdCreator func(r repository.Repository, userID int, args ...string) (Cmd, error)
+type cmdCreator func(config) (Cmd, error)
 
 // registry maps command names to commands.
 var registry = map[string]cmdCreator{
@@ -34,10 +43,15 @@ func New(c Config) (Cmd, error) {
 
 	creator, ok := registry[tokens[0]]
 	if !ok {
-		return nil, fmt.Errorf("command %s not found  (indicate one of %s)", tokens[0], strings.Join(names(registry), " "))
+		return nil, fmt.Errorf("command %s not found (indicate one of %s)", tokens[0], strings.Join(names(registry), " "))
 	}
 
-	cmd, err := creator(c.Repository, c.UserID, tokens[1:]...)
+	cmd, err := creator(config{
+		TelegramClient: c.TelegramClient,
+		Repository:     c.Repository,
+		args:           tokens[1:],
+		userID:         c.UserID,
+	})
 	if err != nil {
 		return nil, err
 	}

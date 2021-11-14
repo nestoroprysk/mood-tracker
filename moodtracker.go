@@ -42,9 +42,10 @@ func MoodTracker(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c, err := cmd.New(cmd.Config{
-		Repository: repo,
-		UserID:     u.Message.From.ID,
-		Args:       u.Message.Text,
+		TelegramClient: t,
+		Repository:     repo,
+		UserID:         u.Message.From.ID,
+		Args:           u.Message.Text,
 	})
 	if err != nil {
 		respond(w, t, err.Error())
@@ -79,11 +80,14 @@ func respond(writer http.ResponseWriter, client telegramclient.TelegramClient, r
 		log.Println(err)
 	}
 
-	r, err := client.Send(response)
-	if err != nil {
-		log.Println(err)
-		return
+	if response != "" {
+		r, err := client.SendMessage(response)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		log.Println(r)
+	} else {
+		log.Println("empty response")
 	}
-
-	log.Println(r)
 }

@@ -1,7 +1,10 @@
 package telegramclient
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -11,12 +14,14 @@ import (
 
 // TelegramClient is an interface for sending text to chat.
 type TelegramClient interface {
-	Send(text string) (Response, error)
+	SendMessage(text string) (Response, error)
+	SendPNG(name string, png io.Reader) (Response, error)
 }
 
 // Poster posts an HTTP request.
 type Poster interface {
 	PostForm(url string, data url.Values) (resp *http.Response, err error)
+	Do(*http.Request) (resp *http.Response, err error)
 }
 
 var _ TelegramClient = &telegramClient{}
@@ -43,7 +48,7 @@ func New(conf Config, chatID int, client Poster) TelegramClient {
 }
 
 // Send sends text to chat.
-func (tc telegramClient) Send(text string) (Response, error) {
+func (tc telegramClient) SendMessage(text string) (Response, error) {
 	response, err := tc.client.PostForm(
 		"https://api.telegram.org/bot"+tc.token+"/sendMessage",
 		url.Values{
@@ -62,6 +67,57 @@ func (tc telegramClient) Send(text string) (Response, error) {
 	}
 
 	result, err := ParseResponse(response.Body)
+	if err != nil {
+		return Response{}, err
+	}
+
+	if result.Ok == false {
+		return Response{}, fmt.Errorf("expecting ok; got %+v", result)
+	}
+
+	if result.ErrorCode != 0 {
+		return Response{}, fmt.Errorf("expecting zero exit code; got %+v", result)
+	}
+
+	return result, nil
+}
+
+func (tc telegramClient) SendPNG(name string, png io.Reader) (Response, error) {
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+
+	file, err := w.CreateFormFile("photo", name)
+	if err != nil {
+		return Response{}, err
+	}
+	if _, err := io.Copy(file, png); err != nil {
+		return Response{}, err
+	}
+
+	if err := w.WriteField("chat_id", tc.chatID); err != nil {
+		return Response{}, err
+	}
+
+	w.Close()
+
+	req, err := http.NewRequest("POST", "https://api.telegram.org/bot"+tc.token+"/sendPhoto", &b)
+	if err != nil {
+		return Response{}, err
+	}
+
+	req.Header.Set("Content-Type", w.FormDataContentType())
+
+	res, err := tc.client.Do(req)
+	if err != nil {
+		err := fmt.Errorf("error when posting text to the chat %q: %w", tc.chatID, err)
+		return Response{}, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return Response{}, fmt.Errorf("expecting status code %d for the Telegram response; got %d", http.StatusOK, res.StatusCode)
+	}
+
+	result, err := ParseResponse(res.Body)
 	if err != nil {
 		return Response{}, err
 	}

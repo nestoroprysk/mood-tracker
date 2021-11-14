@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-
-	"github.com/nestoroprysk/mood-tracker/internal/repository"
 )
 
 // Registry is a list of items.
@@ -20,13 +18,13 @@ type Item struct {
 	Labels []string  `json:"labels"`
 }
 
-func newAdd(r repository.Repository, userID int, args ...string) (Cmd, error) {
+func newAdd(c config) (Cmd, error) {
 	return func() (string, error) {
-		if len(args) == 0 {
+		if len(c.args) == 0 {
 			return "", errors.New("indicate the mood valued from 1 to 5 and optional tags, e.g., /add 5 happy energetic")
 		}
 
-		mood, err := strconv.Atoi(args[0])
+		mood, err := strconv.Atoi(c.args[0])
 		if err != nil {
 			return "", errors.New("indicate the mood valued from 1 to 5 and optional tags, e.g., /add 5 happy energetic")
 		}
@@ -34,30 +32,30 @@ func newAdd(r repository.Repository, userID int, args ...string) (Cmd, error) {
 		i := Item{
 			Time:   time.Now().UTC(),
 			Mood:   mood,
-			Labels: args[1:],
+			Labels: c.args[1:],
 		}
 
-		b, err := r.Read(userIDJSON(userID))
+		b, err := c.Read(userIDJSON(c.userID))
 		if err != nil {
 			return "", err
 		}
 
-		var reg Registry
-		if err := json.Unmarshal(b, &reg); err != nil {
+		var r Registry
+		if err := json.Unmarshal(b, &r); err != nil {
 			return "", err
 		}
-		reg = append(reg, i)
+		r = append(r, i)
 
-		b, err = json.MarshalIndent(reg, "", " ")
+		b, err = json.MarshalIndent(r, "", " ")
 		if err != nil {
 			return "", err
 		}
 
-		if err := r.Override(userIDJSON(userID), b); err != nil {
+		if err := c.Override(userIDJSON(c.userID), b); err != nil {
 			return "", err
 		}
 
-		return fmt.Sprintf("Added a new entry. Thank you for using the bot! You have added %d entries that far. Good job! Enter /stat to see analytics on your mood.", len(reg)), nil
+		return fmt.Sprintf("Added a new entry. Thank you for using the bot! You have added %d entries that far. Good job! Enter /stat to see analytics on your mood.", len(r)), nil
 	}, nil
 }
 
