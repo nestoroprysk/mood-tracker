@@ -34,7 +34,13 @@ gcloud beta builds triggers create github \
     --repo-owner=nestoroprysk \
     --build-config=cloudbuild.yaml
 
-# deploy the function
+# grant cloudbuild access to secrets and functions
+export PROJECT_ID=$(gcloud projects list --format=json | jq -r '.[].projectId')
+export PROJECT_NUMBER=$(gcloud projects list --format=json | jq -r '.[].projectNumber')
+export CLOUDBUILD_SERVICE="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
+gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:${CLOUDBUILD_SERVICE}" --role="roles/secretmanager.secretAccessor"
+
+# deploy the function manually (or push a commit to master, which is a preferrable option)
 gcloud functions deploy MoodTracker \
     --entry-point=MoodTracker \
     --region=europe-west3 \
