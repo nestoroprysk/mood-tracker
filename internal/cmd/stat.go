@@ -102,7 +102,7 @@ func labelPNG(r Registry) (io.Reader, error) {
 		})
 	}
 
-	sort.Slice(vals, func(i, j int) bool { return vals[i].Label < vals[j].Label })
+	sort.Slice(vals, func(i, j int) bool { return vals[i].Value >= vals[j].Value })
 
 	graph := chart.BarChart{
 		Title: "Mood Labels",
@@ -145,7 +145,7 @@ func freqPNG(r Registry) (io.Reader, error) {
 		})
 	}
 
-	sort.Slice(vals, func(i, j int) bool { return vals[i].Label < vals[j].Label })
+	sort.Slice(vals, func(i, j int) bool { return vals[i].Label >= vals[j].Label })
 
 	graph := chart.BarChart{
 		Title: "Mood Frequencies",
