@@ -23,12 +23,12 @@ type Item struct {
 func newAdd(r repository.Repository, userID int, args ...string) (Cmd, error) {
 	return func() (string, error) {
 		if len(args) == 0 {
-			return "", errors.New("indicate the mood valued from 1 to 5, e.g., /add 5")
+			return "", errors.New("indicate the mood valued from 1 to 5 and optional tags, e.g., /add 5 happy energetic")
 		}
 
 		mood, err := strconv.Atoi(args[0])
 		if err != nil {
-			return "", errors.New("indicate the mood valued from 1 to 5, e.g., /add 5")
+			return "", errors.New("indicate the mood valued from 1 to 5 and optional tags, e.g., /add 5 happy energetic")
 		}
 
 		i := Item{
@@ -57,7 +57,7 @@ func newAdd(r repository.Repository, userID int, args ...string) (Cmd, error) {
 			return "", err
 		}
 
-		return fmt.Sprintf("%s", b), nil
+		return fmt.Sprintf("Added a new entry. Thank you for using the bot! You have added %d entries that far. Good job! Enter /stat to see analytics on your mood.", len(reg)), nil
 	}, nil
 }
 

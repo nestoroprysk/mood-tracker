@@ -34,7 +34,7 @@ gcloud beta builds triggers create github \
     --repo-owner=nestoroprysk \
     --build-config=cloudbuild.yaml
 
-# grant cloudbuild access sufficient access
+# grant cloudbuild sufficient access
 export PROJECT_ID=$(gcloud projects list --format=json | jq -r '.[].projectId')
 export PROJECT_NUMBER=$(gcloud projects list --format=json | jq -r '.[].projectNumber')
 export CLOUDBUILD_SERVICE="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
