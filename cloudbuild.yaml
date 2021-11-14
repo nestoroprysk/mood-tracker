@@ -22,7 +22,7 @@ steps:
           --memory=128MB
           --max-instances=1
           --allow-unauthenticated
-          --update-env-vars=MOOD_TRACKER_BOT_TOKEN=${MOOD_TRACKER_BOT_TOKEN},MOOD_TRACKER_BUCKET=${MOOD_TRACKER_BUCKET}
+          --update-env-vars=MOOD_TRACKER_BOT_TOKEN=$$MOOD_TRACKER_BOT_TOKEN,MOOD_TRACKER_BUCKET=$$MOOD_TRACKER_BUCKET
     env: ["MOOD_TRACKER_BUCKET=moodtracker"]
     secretEnv:
       ["MOOD_TRACKER_BOT_TOKEN"]
