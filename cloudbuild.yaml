@@ -1,0 +1,32 @@
+steps:
+  - id: build
+    name: "golang:1.16"
+    args: ["go", "build"]
+    waitFor: ["-"]
+  - id: test
+    name: "golang:1.16"
+    args: ["go", "test", "./..."]
+    waitFor: ["build"]
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    waitFor: ["build", "test"]
+    entrypoint: "bash"
+    args:
+      - -c
+      - >
+        gcloud functions deploy MoodTracker
+          --entry-point=MoodTracker
+          --region=europe-west3
+          --trigger-http
+          --runtime=go116
+          --timeout=5s
+          --memory=128MB
+          --max-instances=1
+          --allow-unauthenticated
+          --update-env-vars=MOOD_TRACKER_BOT_TOKEN=${MOOD_TRACKER_BOT_TOKEN},MOOD_TRACKER_BUCKET=${MOOD_TRACKER_BUCKET}
+    env: ["MOOD_TRACKER_BUCKET=moodtracker"]
+    secretEnv:
+      ["MOOD_TRACKER_BOT_TOKEN"]
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/MOOD_TRACKER_BOT_TOKEN/versions/1
+      env: "MOOD_TRACKER_BOT_TOKEN"

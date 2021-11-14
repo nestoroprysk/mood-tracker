@@ -3,7 +3,7 @@ package util_test
 import (
 	"testing"
 
-	"github.com/nestoroprysk/TelegramBots/internal/util"
+	"github.com/nestoroprysk/mood-tracker/internal/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"

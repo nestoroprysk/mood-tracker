@@ -8,6 +8,7 @@ import (
 
 	"github.com/nestoroprysk/mood-tracker/internal/cmd"
 	"github.com/nestoroprysk/mood-tracker/internal/env"
+	"github.com/nestoroprysk/mood-tracker/internal/repository"
 	"github.com/nestoroprysk/mood-tracker/internal/telegramclient"
 )
 
@@ -16,6 +17,7 @@ func MoodTracker(w http.ResponseWriter, r *http.Request) {
 		Config: telegramclient.Config{
 			Token: os.Getenv("MOOD_TRACKER_BOT_TOKEN"),
 		},
+		Bucket: os.Getenv("MOOD_TRACKER_BUCKET"),
 	}
 
 	u, err := telegramclient.ParseUpdate(r.Body)
@@ -30,7 +32,17 @@ func MoodTracker(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c, err := cmd.New(u.Message.Text)
+	repo, err := repository.New(env.Bucket)
+	if err != nil {
+		respond(w, t, err.Error())
+		return
+	}
+
+	c, err := cmd.New(cmd.Config{
+		Repository: repo,
+		UserID:     u.Message.From.ID,
+		Args:       u.Message.Text,
+	})
 	if err != nil {
 		respond(w, t, err.Error())
 		return

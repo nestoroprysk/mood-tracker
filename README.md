@@ -18,9 +18,21 @@ brew install google-cloud-sdk
 # create a gcloud project
 gcloud init
 
-# create a bucket
-export MOOD_TRACKER_BUCKET_URL="<gs://uniquelocation>"
-gsutil md -l EUROPE-WEST3 ${MOOD_TRACKER_BUCKET_URL}
+# create a unique bucket (make sure to update cloudbuild.yaml with that value)
+export MOOD_TRACKER_BUCKET="<bucket>"
+gsutil md -l EUROPE-WEST3 "gs://${MOOD_TRACKER_BUCKET}"
+
+# create a secret for a token
+gcloud secrets create MOOD_TRACKER_BOT_TOKEN
+echo -n "${MOOD_TRACKER_BOT_TOKEN}" | gcloud secrets versions add MOOD_TRACKER_BOT_TOKEN --data-file=-
+
+# configure running test and deploy on each push to master (make sure to update repo and owner, authenticate with the UI if necessary)
+gcloud beta builds triggers create github \
+    --name=deploy \
+    --repo-name=mood-tracker \
+    --branch-pattern="^master$" \
+    --repo-owner=nestoroprysk \
+    --build-config=cloudbuild.yaml
 
 # deploy the function
 gcloud functions deploy MoodTracker \
@@ -32,7 +44,7 @@ gcloud functions deploy MoodTracker \
     --memory=128MB \
     --max-instances=1 \
     --allow-unauthenticated \
-    --update-env-vars=MOOD_TRACKER_BOT_TOKEN=${MOOD_TRACKER_BOT_TOKEN}
+    --update-env-vars=MOOD_TRACKER_BOT_TOKEN=${MOOD_TRACKER_BOT_TOKEN},MOOD_TRACKER_BUCKET=${MOOD_TRACKER_BUCKET}
 
 # set telegram hooks
 curl --data "url=$(gcloud functions describe MoodTracker --region=europe-west3 --format=json | jq -r .httpsTrigger.url)" https://api.telegram.org/bot$MOOD_TRACKER_BOT_TOKEN/SetWebhook

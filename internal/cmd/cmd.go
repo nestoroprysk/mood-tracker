@@ -3,13 +3,22 @@ package cmd
 import (
 	"fmt"
 	"strings"
+
+	"github.com/nestoroprysk/mood-tracker/internal/repository"
 )
+
+// Config configures the command.
+type Config struct {
+	Repository repository.Repository
+	Args       string `validate:"required"`
+	UserID     int    `validate:"required"`
+}
 
 // Cmd executes the comment and returns the text result or error.
 type Cmd func() (string, error)
 
 // cmdCreator creates a command.
-type cmdCreator func(args ...string) (Cmd, error)
+type cmdCreator func(r repository.Repository, userID int, args ...string) (Cmd, error)
 
 // registry maps command names to commands.
 var registry = map[string]cmdCreator{
@@ -17,8 +26,8 @@ var registry = map[string]cmdCreator{
 	"/stat": newStat,
 }
 
-func New(c string) (Cmd, error) {
-	tokens := parseTokens(c)
+func New(c Config) (Cmd, error) {
+	tokens := parseTokens(c.Args)
 	if len(tokens) == 0 {
 		return nil, fmt.Errorf("command name should be specified (indicate one of %s)", strings.Join(names(registry), " "))
 	}
@@ -28,7 +37,7 @@ func New(c string) (Cmd, error) {
 		return nil, fmt.Errorf("command %s not found  (indicate one of %s)", tokens[0], strings.Join(names(registry), " "))
 	}
 
-	cmd, err := creator(tokens[1:]...)
+	cmd, err := creator(c.Repository, c.UserID, tokens[1:]...)
 	if err != nil {
 		return nil, err
 	}

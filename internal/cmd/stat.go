@@ -1,8 +1,12 @@
 package cmd
 
-import "fmt"
+import (
+	"fmt"
 
-func newStat(args ...string) (Cmd, error) {
+	"github.com/nestoroprysk/mood-tracker/internal/repository"
+)
+
+func newStat(r repository.Repository, userID int, args ...string) (Cmd, error) {
 	return func() (string, error) {
 		return fmt.Sprintf("%v", args), nil
 	}, nil

@@ -1,9 +1,66 @@
 package cmd
 
-import "fmt"
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"strconv"
+	"time"
 
-func newAdd(args ...string) (Cmd, error) {
+	"github.com/nestoroprysk/mood-tracker/internal/repository"
+)
+
+// Registry is a list of items.
+type Registry []Item
+
+// Item is a mood item.
+type Item struct {
+	Time   time.Time `json:"time"`
+	Mood   int       `json:"mood"`
+	Labels []string  `json:"labels"`
+}
+
+func newAdd(r repository.Repository, userID int, args ...string) (Cmd, error) {
 	return func() (string, error) {
-		return fmt.Sprintf("%v", args), nil
+		if len(args) == 0 {
+			return "", errors.New("indicate the mood valued from 1 to 5, e.g., /add 5")
+		}
+
+		mood, err := strconv.Atoi(args[0])
+		if err != nil {
+			return "", errors.New("indicate the mood valued from 1 to 5, e.g., /add 5")
+		}
+
+		i := Item{
+			Time:   time.Now().UTC(),
+			Mood:   mood,
+			Labels: args[1:],
+		}
+
+		b, err := r.Read(userIDJSON(userID))
+		if err != nil {
+			return "", err
+		}
+
+		var reg Registry
+		if err := json.Unmarshal(b, &reg); err != nil {
+			return "", err
+		}
+		reg = append(reg, i)
+
+		b, err = json.MarshalIndent(reg, "", " ")
+		if err != nil {
+			return "", err
+		}
+
+		if err := r.Override(userIDJSON(userID), b); err != nil {
+			return "", err
+		}
+
+		return fmt.Sprintf("%s", b), nil
 	}, nil
+}
+
+func userIDJSON(id int) string {
+	return strconv.Itoa(id) + ".json"
 }
