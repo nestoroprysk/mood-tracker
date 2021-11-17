@@ -15,7 +15,7 @@ type Update struct {
 type Message struct {
 	Text string `json:"text" validate:"required"`
 	Chat Chat   `json:"chat" validate:"required"`
-	From User   `json:"from", validate:"required"`
+	From User   `json:"from" validate:"required"`
 }
 
 // User is a Telegram object that indicates a user that sends a message.

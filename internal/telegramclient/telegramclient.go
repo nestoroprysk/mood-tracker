@@ -71,7 +71,7 @@ func (tc telegramClient) SendMessage(text string) (Response, error) {
 		return Response{}, err
 	}
 
-	if result.Ok == false {
+	if !result.Ok {
 		return Response{}, fmt.Errorf("expecting ok; got %+v", result)
 	}
 
@@ -122,7 +122,7 @@ func (tc telegramClient) SendPNG(name string, png io.Reader) (Response, error) {
 		return Response{}, err
 	}
 
-	if result.Ok == false {
+	if !result.Ok {
 		return Response{}, fmt.Errorf("expecting ok; got %+v", result)
 	}
 

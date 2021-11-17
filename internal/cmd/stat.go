@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"context"
 	"io"
 	"sort"
 	"strconv"
@@ -25,9 +24,7 @@ func newStat(e env) (Cmd, error) {
 			return "", err
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*500)
-		defer cancel()
-		g, ctx := errgroup.WithContext(ctx)
+		var g errgroup.Group
 
 		for _, i := range []struct {
 			name string
