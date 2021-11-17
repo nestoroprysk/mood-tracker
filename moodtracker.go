@@ -48,7 +48,7 @@ func MoodTracker(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c, err := cmd.New(cmd.Config{
+	c, err := cmd.New(cmd.Env{
 		TelegramClient: t,
 		Repository:     repo,
 		UserID:         u.Message.From.ID,

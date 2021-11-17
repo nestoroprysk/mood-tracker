@@ -5,6 +5,7 @@ go 1.16
 require (
 	cloud.google.com/go v0.86.0 // indirect
 	cloud.google.com/go/storage v1.10.0
+	github.com/getlantern/deepcopy v0.0.0-20160317154340-7f45deb8130a
 	github.com/kr/text v0.2.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/onsi/ginkgo v1.16.5

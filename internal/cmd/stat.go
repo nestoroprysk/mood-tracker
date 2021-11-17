@@ -3,25 +3,25 @@ package cmd
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"io"
 	"sort"
 	"strconv"
 	"time"
 
+	"github.com/nestoroprysk/mood-tracker/internal/registry"
 	chart "github.com/wcharczuk/go-chart/v2"
 	"golang.org/x/sync/errgroup"
 )
 
-func newStat(c config) (Cmd, error) {
+func newStat(e env) (Cmd, error) {
 	return func() (string, error) {
-		b, err := c.Read(userIDJSON(c.userID))
+		b, err := e.Read(userIDJSON(e.userID))
 		if err != nil {
 			return "", err
 		}
 
-		var r Registry
-		if err := json.Unmarshal(b, &r); err != nil {
+		r, err := registry.Make(b, e.userID)
+		if err != nil {
 			return "", err
 		}
 
@@ -29,22 +29,22 @@ func newStat(c config) (Cmd, error) {
 		defer cancel()
 		g, ctx := errgroup.WithContext(ctx)
 
-		for _, e := range []struct {
+		for _, i := range []struct {
 			name string
-			f    func(Registry) (io.Reader, error)
+			f    func(registry.T) (io.Reader, error)
 		}{
 			{name: "time.png", f: timePNG},
 			{name: "label.png", f: labelPNG},
 			{name: "freq.png", f: freqPNG},
 		} {
-			f, name := e.f, e.name
+			f, name := i.f, i.name
 			g.Go(func() error {
 				png, err := f(r)
 				if err != nil {
 					return err
 				}
 
-				if _, err := c.SendPNG(name, png); err != nil {
+				if _, err := e.SendPNG(name, png); err != nil {
 					return err
 				}
 
@@ -60,10 +60,10 @@ func newStat(c config) (Cmd, error) {
 	}, nil
 }
 
-func timePNG(r Registry) (io.Reader, error) {
+func timePNG(r registry.T) (io.Reader, error) {
 	var xs []time.Time
 	var ys []float64
-	for _, i := range r {
+	for _, i := range r.Items {
 		xs = append(xs, i.Time)
 		ys = append(ys, float64(i.Mood))
 	}
@@ -86,9 +86,9 @@ func timePNG(r Registry) (io.Reader, error) {
 	return b, nil
 }
 
-func labelPNG(r Registry) (io.Reader, error) {
+func labelPNG(r registry.T) (io.Reader, error) {
 	m := map[string]int{}
-	for _, i := range r {
+	for _, i := range r.Items {
 		for _, l := range i.Labels {
 			m[l]++
 		}
@@ -124,16 +124,15 @@ func labelPNG(r Registry) (io.Reader, error) {
 	return b, nil
 }
 
-func freqPNG(r Registry) (io.Reader, error) {
+func freqPNG(r registry.T) (io.Reader, error) {
 	m := map[int]int{
-		0: 0,
 		1: 0,
 		2: 0,
 		3: 0,
 		4: 0,
 		5: 0,
 	}
-	for _, i := range r {
+	for _, i := range r.Items {
 		m[i.Mood]++
 	}
 

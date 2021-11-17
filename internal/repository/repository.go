@@ -7,6 +7,7 @@ import (
 	"cloud.google.com/go/storage"
 )
 
+// Repository interacts with the storage.
 type Repository interface {
 	Read(obj string) ([]byte, error)
 	Override(obj string, body []byte) error
