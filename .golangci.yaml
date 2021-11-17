@@ -1,0 +1,14 @@
+run:
+  allow-parallel-runners: true
+
+linters-settings:
+  gci:
+    local-prefixes: github.com/nestoroprysk/mood-tracker
+
+linters:
+  enable-all: true
+  disable:
+    - interfacer
+    - scopelint
+    - maligned
+    - golint
