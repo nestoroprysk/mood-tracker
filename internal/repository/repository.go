@@ -42,10 +42,12 @@ func (r repository) Read(obj string) ([]byte, error) {
 
 func (r repository) Override(obj string, body []byte) error {
 	wc := r.Object(obj).NewWriter(context.TODO())
+
 	_, err := wc.Write(body)
 	if err != nil {
 		return err
 	}
+
 	if err := wc.Close(); err != nil {
 		return err
 	}

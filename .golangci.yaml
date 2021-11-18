@@ -12,3 +12,17 @@ linters:
     - scopelint
     - maligned
     - golint
+    - prealloc
+    - wrapcheck
+    - varnamelen
+    - gomnd
+    - goerr113
+    - exhaustivestruct
+    - lll
+    - ireturn
+    - paralleltest
+    - gocritic
+    - tagliatelle
+    - noctx
+    - gochecknoglobals
+    - nlreturn

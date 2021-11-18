@@ -37,10 +37,6 @@ func MoodTracker(w http.ResponseWriter, r *http.Request) {
 	logUpdate(u)
 
 	t := telegramclient.New(env.Config, u.Message.Chat.ID, http.DefaultClient)
-	if err != nil {
-		respond(w, nil, err.Error())
-		return
-	}
 
 	repo, err := repository.New(env.Bucket)
 	if err != nil {
@@ -83,6 +79,7 @@ func respond(writer http.ResponseWriter, client telegramclient.TelegramClient, r
 
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
+
 	if err := json.NewEncoder(writer).Encode(response); err != nil {
 		log.Println(err)
 	}
@@ -93,6 +90,7 @@ func respond(writer http.ResponseWriter, client telegramclient.TelegramClient, r
 			log.Println(err)
 			return
 		}
+
 		log.Println(r)
 	} else if response != "" {
 		log.Println(response)

@@ -69,7 +69,9 @@ func names(r map[string]cmdCreator) []string {
 
 func parseTokens(m string) []string {
 	ts := strings.Split(m, " ")
+
 	var result []string
+
 	for _, t := range ts {
 		s := strings.TrimSpace(t)
 		if s != "" {

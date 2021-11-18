@@ -7,9 +7,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/nestoroprysk/mood-tracker/internal/registry"
 	chart "github.com/wcharczuk/go-chart/v2"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/nestoroprysk/mood-tracker/internal/registry"
 )
 
 func newStat(e env) (Cmd, error) {
@@ -35,6 +36,7 @@ func newStat(e env) (Cmd, error) {
 			{name: "freq.png", f: freqPNG},
 		} {
 			f, name := i.f, i.name
+
 			g.Go(func() error {
 				png, err := f(r)
 				if err != nil {
@@ -59,7 +61,9 @@ func newStat(e env) (Cmd, error) {
 
 func timePNG(r registry.T) (io.Reader, error) {
 	var xs []time.Time
+
 	var ys []float64
+
 	for _, i := range r.Items {
 		xs = append(xs, i.Time)
 		ys = append(ys, float64(i.Mood))
@@ -85,6 +89,7 @@ func timePNG(r registry.T) (io.Reader, error) {
 
 func labelPNG(r registry.T) (io.Reader, error) {
 	m := map[string]int{}
+
 	for _, i := range r.Items {
 		for _, l := range i.Labels {
 			m[l]++

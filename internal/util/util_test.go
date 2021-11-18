@@ -3,11 +3,11 @@ package util_test
 import (
 	"testing"
 
-	"github.com/nestoroprysk/mood-tracker/internal/util"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+
+	"github.com/nestoroprysk/mood-tracker/internal/util"
 )
 
 func TestUtil(t *testing.T) {

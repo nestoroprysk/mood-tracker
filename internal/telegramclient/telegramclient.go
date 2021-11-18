@@ -61,6 +61,7 @@ func (tc telegramClient) SendMessage(text string) (Response, error) {
 		err := fmt.Errorf("error when posting text to the chat %q: %w", tc.chatID, err)
 		return Response{}, err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
 		return Response{}, fmt.Errorf("expecting status code %d for the Telegram response; got %d", http.StatusOK, response.StatusCode)
@@ -90,6 +91,7 @@ func (tc telegramClient) SendPNG(name string, png io.Reader) (Response, error) {
 	if err != nil {
 		return Response{}, err
 	}
+
 	if _, err := io.Copy(file, png); err != nil {
 		return Response{}, err
 	}
@@ -112,6 +114,7 @@ func (tc telegramClient) SendPNG(name string, png io.Reader) (Response, error) {
 		err := fmt.Errorf("error when posting text to the chat %q: %w", tc.chatID, err)
 		return Response{}, err
 	}
+	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
 		return Response{}, fmt.Errorf("expecting status code %d for the Telegram response; got %d", http.StatusOK, res.StatusCode)

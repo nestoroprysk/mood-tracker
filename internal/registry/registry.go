@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/getlantern/deepcopy"
+
 	"github.com/nestoroprysk/mood-tracker/internal/registry/registryv0"
 	"github.com/nestoroprysk/mood-tracker/internal/registry/registryv1"
-
-	"github.com/getlantern/deepcopy"
 )
 
 // T is the current version of the registry.
