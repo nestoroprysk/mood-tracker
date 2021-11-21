@@ -1,6 +1,10 @@
 package registryv1
 
-import "time"
+import (
+	"time"
+
+	"github.com/nestoroprysk/mood-tracker/internal/validator"
+)
 
 const Version = "v1"
 
@@ -12,7 +16,22 @@ type T struct {
 }
 
 type Item struct {
-	Time   time.Time `json:"time"`
-	Mood   int       `json:"mood"`
-	Labels []string  `json:"labels"`
+	Time   time.Time `json:"time" validate:"required"`
+	Mood   int       `json:"mood" validate:"min=1,max=5"`
+	Labels []string  `json:"labels" validate:"dive,min=3"`
+}
+
+// FilterItems returns only valid items.
+func FilterItems(is []Item) []Item {
+	v := validator.New()
+
+	var result []Item
+
+	for _, i := range is {
+		if err := v.Struct(i); err == nil {
+			result = append(result, i)
+		}
+	}
+
+	return result
 }

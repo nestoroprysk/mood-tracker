@@ -12,6 +12,7 @@ import (
 	"github.com/nestoroprysk/mood-tracker/internal/env"
 	"github.com/nestoroprysk/mood-tracker/internal/repository"
 	"github.com/nestoroprysk/mood-tracker/internal/telegramclient"
+	"github.com/nestoroprysk/mood-tracker/internal/validator"
 )
 
 func MoodTracker(w http.ResponseWriter, r *http.Request) {
@@ -35,6 +36,12 @@ func MoodTracker(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logUpdate(u)
+
+	v := validator.New()
+	if err := v.Struct(u); err != nil {
+		respond(w, nil, err.Error())
+		return
+	}
 
 	t := telegramclient.New(env.Config, u.Message.Chat.ID, http.DefaultClient)
 

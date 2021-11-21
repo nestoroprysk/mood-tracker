@@ -10,6 +10,7 @@ import (
 
 	"github.com/nestoroprysk/mood-tracker/internal/registry/registryv0"
 	"github.com/nestoroprysk/mood-tracker/internal/registry/registryv1"
+	"github.com/nestoroprysk/mood-tracker/internal/validator"
 )
 
 // T is the current version of the registry.
@@ -21,6 +22,7 @@ func Make(b []byte, userID int) (T, error) {
 	var regv1 registryv1.T
 	if err := json.Unmarshal(b, &regv1); err == nil {
 		if regv1.Version == registryv1.Version {
+			regv1.Items = registryv1.FilterItems(regv1.Items)
 			return T(regv1), nil
 		}
 	}
@@ -33,7 +35,7 @@ func Make(b []byte, userID int) (T, error) {
 	return T{
 		Version: registryv1.Version,
 		UserID:  userID,
-		Items:   regv0ItemsToRegv1Items(regv0),
+		Items:   registryv1.FilterItems(regv0ItemsToRegv1Items(regv0)),
 	}, nil
 }
 
@@ -52,11 +54,18 @@ func (t T) WithItem(args ...string) (T, error) {
 		return T{}, err
 	}
 
-	result.Items = append(result.Items, registryv1.Item{
+	i := registryv1.Item{
 		Time:   time.Now().UTC(),
 		Mood:   mood,
 		Labels: args[1:],
-	})
+	}
+
+	v := validator.New()
+	if err := v.Struct(i); err != nil {
+		return T{}, err
+	}
+
+	result.Items = append(result.Items, i)
 
 	return result, nil
 }
