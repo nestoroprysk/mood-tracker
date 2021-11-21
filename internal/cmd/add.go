@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
+
+	"cloud.google.com/go/storage"
 
 	"github.com/nestoroprysk/mood-tracker/internal/registry"
 )
@@ -12,7 +15,9 @@ func newAdd(e env) (Cmd, error) {
 		j := userIDJSON(e.userID)
 
 		b, err := e.Read(j)
-		if err != nil {
+		if errors.Is(err, storage.ErrObjectNotExist) {
+			b = nil
+		} else if err != nil {
 			return "", err
 		}
 

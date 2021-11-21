@@ -18,6 +18,9 @@ import (
 // Registry is a mood diary for a person.
 type T registryv1.T
 
+// Make creates a new registry of the latest version.
+//
+// If the input body is empty, an empty registry is created.
 func Make(b []byte, userID int) (T, error) {
 	var regv1 registryv1.T
 	if err := json.Unmarshal(b, &regv1); err == nil {
@@ -28,8 +31,10 @@ func Make(b []byte, userID int) (T, error) {
 	}
 
 	var regv0 registryv0.T
-	if err := json.Unmarshal(b, &regv0); err != nil {
-		return T{}, err
+	if len(b) != 0 {
+		if err := json.Unmarshal(b, &regv0); err != nil {
+			return T{}, err
+		}
 	}
 
 	return T{
